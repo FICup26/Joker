@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>POKER Neon — Full</title>
+<style>
+:root {
+  --card-w: 92px; --card-h: 128px;
+  /* Colori Joker */
+  --accent1: #9b4bff; /* Viola Joker */
+  --accent2: #39ff14; /* Verde Neon Joker */
+  --accent3: #ff0000; /* Rosso Sorriso */
+  --accent4: #ffd400; /* Oro Gilet */
+  --bg: #050505;
+  --play-a: #9b4bff;
+  --play-b: #39ff14;
+}
+
+/* --- SFONDO MULTICOLORE LIQUIDO (OTTIMIZZATO) --- */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -100%; /* Più largo per coprire la rotazione */
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(155, 75, 255, 0.4) 0%, transparent 40%), /* Viola */
+    radial-gradient(circle at 70% 20%, rgba(57, 255, 20, 0.3) 0%, transparent 40%),  /* Verde */
+    radial-gradient(circle at 40% 80%, rgba(255, 0, 0, 0.25) 0%, transparent 40%),   /* Rosso */
+    radial-gradient(circle at 80% 80%, rgba(255, 212, 0, 0.2) 0%, transparent 40%),  /* Oro */
+    #050505; /* Fondo nero */
+  z-index: -2;
+  /* Animazione fluida che mescola i colori */
+  animation: liquidChaos 20s linear infinite;
+  will-change: transform;
+}
+
+/* Strato Fumo/Grana cinematografica */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: url('https://www.transparenttextures.com/patterns/asfalt-dark.png');
+  opacity: 0.15;
+  z-index: -1;
+  pointer-events: none;
+  animation: smokeMove 30s linear infinite;
+}
+
+/* Fasci di luce Laser Multicolore */
+.app::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 150px,
+    rgba(155, 75, 255, 0.08) 151px, /* Laser Viola */
+    rgba(57, 255, 20, 0.08) 153px   /* Laser Verde */
+  );
+  z-index: -1;
+  animation: laserSweep 10s linear infinite;
+}
+
+/* --- ANIMAZIONI --- */
+
+/* Movimento Liquido: combina rotazione e respiro per mescolare i gradienti */
+@keyframes liquidChaos {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+/* Movimento del fumo (molto lento per non distrarre) */
+@keyframes smokeMove {
+  from { background-position: 0 0; }
+  to { background-position: 500px 500px; }
+}
+
+/* Scorrimento dei fasci di luce */
+@keyframes laserSweep {
+  from { transform: translateX(-100%) translateY(-20%); }
+  to { transform: translateX(100%) translateY(20%); }
+}
+
+/* --- IL RESTO RIMANE UGUALE --- */
+*{box-sizing:border-box;}
+html,body{height:100%;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;color:#fff;-webkit-font-smoothing:antialiased;}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  align-items: center; 
+  justify-content: center;
+  padding: 10px;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+.video-container{ 
+  width:100%; max-width:420px; display:flex; justify-content:center; z-index:1; position:relative; 
+  box-shadow: 0 0 40px rgba(155, 75, 255, 0.3);
+  border-radius: 12px;
+}
+.video-container video{ width:100%; border-radius:12px; }
+
+.cards{ display:flex; gap:14px; align-items:center; justify-content:center; perspective:1600px; margin-top:-60px; z-index:10; position:relative; }
+.card{ width:var(--card-w); height:var(--card-h); border-radius:12px; position:relative; background:#fff; transform-origin:center center; transition: transform .32s ease; z-index:10; cursor:pointer;}
+.card::before{ content:""; position:absolute; inset:-6px; border-radius:16px; background: #fff; filter: blur(14px); opacity:0.2; z-index:-1;}
+
+.cardInner{ width:100%; height:100%; border-radius:10px; position:relative; transform-style:preserve-3d; transition: transform 720ms cubic-bezier(.2,.9,.2,1); overflow:hidden; }
+.cardInner.flipped{ transform: rotateY(180deg); }
+.face{ position:absolute; inset:0; border-radius:10px; backface-visibility:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.front{ transform: rotateY(0deg); background: #fff; }
+.back{ transform: rotateY(180deg); background:linear-gradient(180deg,#0b0b0e,#131217); color:var(--gold); font-size:18px; font-weight:900; display:flex; align-items:center; justify-content:center; text-shadow:0 2px 12px rgba(0,0,0,0.5); }
+
+.symbol{ font-size:72px; line-height:1; font-weight:900; text-shadow: 0 4px 18px rgba(0,0,0,0.15); animation: pulse 1.2s infinite alternate; }
+@keyframes pulse{ 0%{transform:scale(1)} 100%{transform:scale(1.12)} }
+.symbol.spade{ color:#0a0f1a; }
+.symbol.heart{ color:#c61b36; }
+.symbol.diamond{ color:#b88400; }
+.symbol.club{ color:#0a0f1a; }
+
+.rank{ position:absolute; top:6px; left:6px; font-size:16px; font-weight:900; color:#111; }
+.suitSmall{ position:absolute; bottom:6px; right:6px; font-size:16px; color:#111; }
+
+.ringStrip{ width:100%; max-width:420px; height:18px; border-radius:20px; margin-top:12px; background: linear-gradient(90deg,var(--accent1),var(--accent2),var(--accent3),var(--accent4)); background-size:500% 100%; animation:stripMove 3.2s linear infinite; box-shadow:0 0 28px rgba(0,0,0,0.12); }
+@keyframes stripMove { 0% { background-position: 0% 50% } 100% { background-position: 100% 50% } }
+
+.controls{ width:100%; max-width:420px; display:flex; flex-direction:column; align-items:center; gap:10px; margin-top:10px; position:relative; z-index:20; }
+input#team{ width:88%; max-width:320px; padding:12px; border-radius:12px; border:2px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.3); color:#fff; text-align:center; font-weight:800; outline:none; }
+
+button#play{ padding:12px 24px; border-radius:14px; border:none; font-weight:900; cursor:pointer; background: linear-gradient(90deg,var(--play-a),var(--play-b)); color:#001; box-shadow:0 10px 30px rgba(57, 255, 20, 0.3); animation: breathe 2000ms ease-in-out infinite; z-index:20; position:relative; }
+@keyframes breathe { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+.overlay{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:420; }
+.overlay.show{ display:flex; }
+.overlayBox{ min-width:260px; max-width:92%; padding:20px; border-radius:18px; text-align:center; background: linear-gradient(90deg, #ff2e6b, #00f0ff, #ffd400, #9b4bff); background-size: 300% 300%; animation: neonBG 3s linear infinite, boxGlow 2.5s ease-in-out infinite alternate; color: #fff; font-weight: 900; border: 2px solid rgba(255,255,255,0.25); z-index: 999; }
+
+.overlayTitle{ font-weight:900; font-size:22px; margin-bottom:12px; color:#ffd166; text-shadow:0 0 16px #fff; }
+.overlayMsg{ font-weight:800; font-size:18px; color:#fff; margin-bottom:14px }
+.overlayBtns{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+
+.btn{ padding:12px 16px; border-radius:12px; border:none; font-weight:900; cursor:pointer; }
+.btn.claim{ background:linear-gradient(90deg,var(--accent2),var(--accent3)); color:#001 }
+.btn.risk{ background:linear-gradient(90deg,var(--accent1),var(--accent4)); color:#001 }
+.btn.close{ background: linear-gradient(90deg,#ff2e6b,#00f0ff); color:#fff; }
+
+.joker-quote { display: block; margin-top: 15px; font-style: italic; color: #fff; text-shadow: 0 0 8px var(--accent2); font-size: 0.9em; }
+
+@keyframes neonBG{ 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+@keyframes boxGlow{ 0% { box-shadow: 0 0 25px #ff2e6b; } 100% { box-shadow: 0 0 50px #00f0ff; } }
+@keyframes shakeGlow{ 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+.shake-glow{ animation: shakeGlow 0.8s ease forwards; }
+
+.waBtn{ display:inline-block; margin-top:10px; padding:10px 14px; border-radius:10px; background:linear-gradient(90deg,#25D366,#00a884); color:#fff; text-decoration:none; font-weight:900 }
+</style>
+
+</head>
+<body>
+
+<div class="app">
+  <div class="video-container">
+    <video src="https://i.imgur.com/YZehJOe.mp4" autoplay loop muted playsinline></video>
+  </div>
+
+  <div class="cards" id="cards">
+    <div class="card" data-index="0"><div class="cardInner"><div class="face front"><div class="rank">A</div><div class="symbol spade">♠</div><div class="suitSmall">♠</div></div><div class="face back">?</div></div><div class="cardGlow"></div></div>
+    <div class="card" data-index="1"><div class="cardInner"><div class="face front"><div class="rank">K</div><div class="symbol heart">♥</div><div class="suitSmall">♥</div></div><div class="face back">?</div></div><div class="cardGlow"></div></div>
+    <div class="card" data-index="2"><div class="cardInner"><div class="face front"><div class="rank">Q</div><div class="symbol diamond">♦</div><div class="suitSmall">♦</div></div><div class="face back">?</div></div><div class="cardGlow"></div></div>
+  </div>
+
+  <div class="ringStrip"></div>
+
+  <div class="controls">
+    <input id="team" placeholder="Nome squadra" autocomplete="off"/>
+    <div class="row">
+      <button id="play">GIOCA</button>
+      <div id="loader" style="display:none;">⏳</div>
+    </div>
+    <div id="msgTeam" style="color:#ffd166;font-weight:700;margin-top:6px;"></div>
+    <button id="back" class="btn close" style="display:none;margin-top:12px;">⬅️ Torna al gioco</button>
+  </div>
+</div>
+
+<!-- Overlay premi -->
+<div class="overlay" id="overlay">
+  <div class="overlayBox" id="overlayBox">
+    <div class="overlayTitle" id="overlayTitle"></div>
+    <div class="overlayMsg" id="overlayMsg"></div>
+    <div class="overlayBtns" id="overlayBtns"></div>
+  </div>
+</div>
+
+<canvas id="particles"></canvas>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzqo1c-dpCHIgVetHqpEuGiZoVkDryjgWFQqNmqjGfmW33d7Jc2SsXk5zSBuPMmnw/exec";
+
+// --- CITAZIONI JOKER ---
+const jokerQuotes = [
+  "Perché sei così serio? 🤡",
+  "La follia è come la gravità, basta solo una piccola spinta!",
+  "Non sono un mostro... sono solo in anticipo sui tempi.",
+  "Ti sembro il tipo con un piano?",
+  "Tutto brucia! 🔥",
+  "Ho solo risate negative oggi..."
+];
+
+function getRandomQuote() {
+  return jokerQuotes[Math.floor(Math.random() * jokerQuotes.length)];
+}
+
+const playBtn = document.getElementById("play");
+const teamInput = document.getElementById("team");
+const msgTeam = document.getElementById("msgTeam");
+const overlay = document.getElementById("overlay");
+const overlayBox = document.getElementById("overlayBox");
+const overlayTitle = document.getElementById("overlayTitle");
+const overlayMsg = document.getElementById("overlayMsg");
+const overlayBtns = document.getElementById("overlayBtns");
+const backBtn = document.getElementById("back");
+const cards = document.querySelectorAll(".cardInner");
+
+let playing = false;
+let giocatoOggi = false;
+
+function animateCards(){
+  cards.forEach((c,i)=>{
+    setTimeout(()=>{ c.classList.add("flipped"); }, i*350);
+  });
+  setTimeout(()=>cards.forEach(c=>c.classList.remove("flipped")), 3500);
+}
+
+// Overlay modificato per includere la citazione in corsivo sotto il messaggio
+function showOverlay(titolo, msg, buttonsHtml=""){
+  overlayTitle.textContent = titolo;
+  // Aggiungiamo la citazione casuale in fondo al messaggio principale
+  overlayMsg.innerHTML = `${msg}<br><br><i style="color:rgba(255,255,255,0.7); font-size:0.9em;">"${getRandomQuote()}"</i>`;
+  overlayBtns.innerHTML = buttonsHtml;
+  overlay.classList.add("show");
+}
+
+function closeOverlay(){
+  overlay.classList.remove("show");
+}
+
+function fetchGS(team){
+  return new Promise((resolve)=>{
+    const callbackName = "cb_" + Math.random().toString(36).substring(2);
+    window[callbackName] = (data)=>{
+      resolve(data);
+      delete window[callbackName];
+      script.remove();
+    };
+    const script = document.createElement("script");
+    script.src = `${SCRIPT_URL}?team=${encodeURIComponent(team)}&callback=${callbackName}`;
+    script.onerror = ()=>resolve({status:"error", message:"Connessione bloccata"});
+    document.body.appendChild(script);
+  });
+}
+
+playBtn.addEventListener("click", async ()=>{
+  const team = teamInput.value.trim();
+  if(!team){
+    msgTeam.textContent = "Inserisci il nome della squadra!";
+    return;
+  }
+  msgTeam.textContent = "";
+
+  if(giocatoOggi){
+    showOverlay("⚠️ Già giocato", "Hai già giocato oggi! Riprova domani.",
+      `<button class="btn close" onclick="closeOverlay()">OK</button>`);
+    return;
+  }
+
+  playing = true;
+  playBtn.disabled = true;
+  playBtn.textContent = "Giocando...";
+  animateCards();
+
+  const data = await fetchGS(team);
+
+  if(data.status === "giocato"){
+    giocatoOggi = true;
+    showOverlay("⚠️ Già giocato", data.message,
+      `<button class="btn close" onclick="closeOverlay()">OK</button>`);
+  } 
+  else if(data.status === "ok"){
+    giocatoOggi = true;
+    if(data.mystery){
+      showOverlay("🎁 Mystery Box!", data.descrizione,
+        `<button class="btn claim" onclick="apriMystery('${team}', '${data.premio}')">Apri Box</button>`);
+    } else {
+      if(data.premio === "Nessun premio"){
+        showOverlay("🃏 HAI PERSO!!!", "HA VINTO JOKER, RITENTA DOMANI",
+          `<button class="btn close" onclick="closeOverlay()">OK</button>`);
+      } else {
+        showOverlay("🎉 Premio!", `Hai vinto: ${data.premio}`,
+          `<a href="https://wa.me/?text=🃏🎁Ho%20vinto%20${encodeURIComponent(data.premio)}%20con%20la%20squadra%20${encodeURIComponent(team)}!🎁🃏" target="_blank" class="waBtn">Condividi su WhatsApp</a>
+           <button class="btn close" onclick="closeOverlay()">Chiudi</button>`);
+      }
+    }
+  } 
+  else {
+    showOverlay("❌ Errore", data.message || "Errore sconosciuto",
+      `<button class="btn close" onclick="closeOverlay()">OK</button>`);
+  }
+
+  playBtn.disabled = false;
+  playBtn.textContent = "GIOCA";
+});
+
+function apriMystery(team, premio){
+  overlayBox.classList.add("shake-glow");
+  setTimeout(()=>{
+    overlayBox.classList.remove("shake-glow");
+    overlayMsg.innerHTML = `Hai trovato ${premio}! Cosa vuoi fare?<br><br><i style="color:rgba(255,255,255,0.7); font-size:0.9em;">"${getRandomQuote()}"</i>`;
+    overlayBtns.innerHTML = `
+      <button class="btn claim" onclick="riscatta('${team}', '${premio}')">Riscatta</button>
+      <button class="btn risk" onclick="rischia('${team}', '${premio}')">Rischia tutto</button>`;
+  }, 800);
+}
+
+function riscatta(team, premio){
+  overlayMsg.innerHTML = `Hai riscattato ${premio}!<br><br><i style="color:rgba(255,255,255,0.7); font-size:0.9em;">"${getRandomQuote()}"</i>`;
+  overlayBtns.innerHTML = `
+    <a href="https://wa.me/?text=🃏🎁Ho%20vinto%20${encodeURIComponent(premio)}%20con%20la%20squadra%20${encodeURIComponent(team)}!🎁🃏" target="_blank" class="waBtn">Condividi su WhatsApp</a>
+    <button class="btn close" onclick="fineGioco()">Torna al gioco</button>`;
+}
+
+async function rischia(team, premio){
+  overlayMsg.textContent = "Tentando la sorte...";
+  overlayBtns.innerHTML = "";
+  await new Promise(r=>setTimeout(r,1500));
+
+  const vinto = Math.random() < 0.5;
+  if(vinto){
+    const doppio = premio + " (raddoppiato)";
+    overlayMsg.innerHTML = `Hai raddoppiato! ${doppio}<br><br><i style="color:rgba(255,255,255,0.7); font-size:0.9em;">"${getRandomQuote()}"</i>`;
+    overlayBtns.innerHTML = `
+      <a href="https://wa.me/?text=🃏🎁Ho%20vinto%20${encodeURIComponent(premio)}%20e%20raddoppiato%20con%20la%20squadra%20${encodeURIComponent(team)}!🎁🃏" target="_blank" class="waBtn">Condividi su WhatsApp</a>
+      <button class="btn close" onclick="fineGioco()">Torna al gioco</button>`;
+  } else {
+    overlayMsg.innerHTML = `💀 Hai perso tutto!<br><br><i style="color:rgba(255,255,255,0.7); font-size:0.9em;">"${getRandomQuote()}"</i>`;
+    overlayBtns.innerHTML = `<button class="btn close" onclick="fineGioco()">Torna al gioco</button>`;
+  }
+}
+
+function fineGioco(){
+  overlay.classList.remove("show");
+  backBtn.style.display = "block";
+}
+
+backBtn.addEventListener("click", ()=>location.reload());
+</script>
+
+<script>
+// === CONTROLLO PERIODI DI DISPONIBILITÀ + CONTA ALLA ROVESCIA ===
+
+// Imposta i periodi in cui il gioco è attivo
+const availabilityWindows = [
+  { 
+    start: new Date('2026-02-28T00:00:00'), // Inizia oggi
+    end: new Date('2026-03-31T23:59:59')   // Finisce il 31 Marzo
+  }
+];
+
+
+// Elementi interfaccia
+const playButton = document.getElementById("play");
+const teamNameInput = document.getElementById("team");
+
+// Crea un messaggio di stato
+const hintEl = document.createElement('div');
+hintEl.className = 'hint';
+hintEl.style.marginTop = '10px';
+hintEl.style.textAlign = 'center';
+hintEl.style.fontSize = '0.9em';
+hintEl.style.fontWeight = '700';
+document.querySelector('.controls').appendChild(hintEl);
+
+let availabilityTimer = null;
+
+// Verifica disponibilità e aggiorna UI
+function checkAvailability() {
+  const now = new Date();
+  let active = false;
+  let nextStart = null;
+  let currentEnd = null;
+
+  for (const window of availabilityWindows) {
+    if (now >= window.start && now <= window.end) {
+      active = true;
+      currentEnd = window.end;
+      break;
+    } else if (now < window.start) {
+      if (!nextStart || window.start < nextStart) {
+        nextStart = window.start;
+      }
+    }
+  }
+
+  if (active) {
+    // ✅ Disponibile
+    playButton.disabled = false;
+    teamNameInput.disabled = false;
+    hintEl.style.color = "#00ffae";
+    hintEl.textContent = '✅ Gioco attivo!';
+    updateCountdown(currentEnd);
+    clearInterval(availabilityTimer);
+    availabilityTimer = setInterval(() => updateCountdown(currentEnd), 1000);
+  } else {
+    // 🔒 Non disponibile
+    playButton.disabled = true;
+    teamNameInput.disabled = true;
+    clearInterval(availabilityTimer);
+    hintEl.style.color = "#ff5555";
+
+    if (nextStart) {
+      const startDateStr = nextStart.toLocaleDateString('it-IT');
+      const startTimeStr = `${nextStart.getHours().toString().padStart(2,'0')}:${nextStart.getMinutes().toString().padStart(2,'0')}`;
+      hintEl.textContent = `🔒 Disponibile dal ${startDateStr} ore ${startTimeStr}`;
+    } else {
+      hintEl.textContent = `🔒 Non disponibile al momento.`;
+    }
+  }
+
+  return active;
+}
+
+// Countdown automatico
+function updateCountdown(endDate) {
+  const now = new Date();
+  const diff = endDate - now;
+  if (diff <= 0) {
+    checkAvailability();
+    return;
+  }
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+  const endStr = `${endDate.toLocaleDateString('it-IT')} ore ${endDate.getHours().toString().padStart(2,'0')}:${endDate.getMinutes().toString().padStart(2,'0')}`;
+  hintEl.textContent = `🕒 Attivo fino al ${endStr} — mancano ${hours}h ${minutes}m ${seconds}s`;
+}
+
+// Controlli iniziali e aggiornamento periodico
+window.addEventListener('DOMContentLoaded', checkAvailability);
+setInterval(checkAvailability, 60000);
+</script>
+</body>
+</html>
